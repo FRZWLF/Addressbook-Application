@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -7,17 +7,21 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
   ngOnInit(): void { //onload
+    //Adressen aus localstorage laden
     let addressBookStorageString = localStorage.getItem("addressBook")
     if (addressBookStorageString) {
       this.addressBook = JSON.parse(addressBookStorageString)
+      //Adressen aufsteigend sortieren
       this.addressBook.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id)
+      //nächst höchste ID finden
       if ((this.addressBook.length >= 1)) {
         this.currentId = this.addressBook[this.addressBook.length - 1].id
         console.log(this.currentId)
       }
+      //nächst freie ID finden
       this.nextId()
     }
-    // Initialisieren Sie Ihre Datenquelle
+    //Tabelle reagiert dadurch auf Sucheingabe
     this.filteredData = this.addressBook;
   }
 
@@ -26,6 +30,7 @@ export class HomeComponent implements OnInit {
   savedId: number = 0
   searchQuery: string = "";
   filteredData: Address[] = [];
+  currentEditAddress: Address | null = null
 
   search() {
     if (this.searchQuery.trim() === "") {
@@ -49,7 +54,9 @@ export class HomeComponent implements OnInit {
   addAddress() {
     var modal = document.getElementById("add-modal")!;
     console.log("Ausgeführt")
-    const name: HTMLInputElement = <HTMLInputElement>document.getElementById("name")! //cast htmlElement to htmlInputElement
+    //cast htmlElement to htmlInputElement
+    //TypeScript-Compiler mitteilen, den zurückgegebenen Wert als HTMLInputElement zu behandeln.
+    const name: HTMLInputElement = <HTMLInputElement>document.getElementById("name")! 
     const street: HTMLInputElement = <HTMLInputElement>document.getElementById("straße")!
     const plz: HTMLInputElement = <HTMLInputElement>document.getElementById("plz")!
     const city: HTMLInputElement = <HTMLInputElement>document.getElementById("stadt")!
@@ -61,13 +68,16 @@ export class HomeComponent implements OnInit {
     const newCity = city.value
     const newCountry = country.value
     console.log(name)
+    //vollständige Adress-Eingabe gewährleisten
     if (newName && newStreet && newPlz && newCity && newCountry) {
       const newid = this.autoGenerateId()
+      //neue Adresse anlegen und in das addressBook-Array pushen
       const newAddress = new Address(
         newid, newName, newStreet, newPlz, newCity, newCountry)
 
       this.addressBook.push(newAddress)
       console.log(this.addressBook)
+      //Tabelle + localstorage aktualisieren
       this.saveChanges()
       modal.style.display = "none"
 
@@ -82,9 +92,11 @@ export class HomeComponent implements OnInit {
   }
 
   autoGenerateId() {
+    //Länge des 'addressBook'-Arrays gleich 0 oder kein Element hat 'id' 1000100
     if (this.addressBook.length === 0 || this.addressBook.every(address => address.id !== 1000100)) {
       return this.currentId
     }
+    //nächst freie ID finden
     this.nextId()
     return this.currentId
   }
@@ -92,7 +104,7 @@ export class HomeComponent implements OnInit {
   deleteAddress() {
     var modal = document.getElementById("delete-modal")!;
     console.log("Löschen geklickt für ID:", this.savedId);
-    // Finden und Entfernen der Adresse aus dem addressBook-Array
+    // Finden und Entfernen des Adress-Objektes aus dem addressBook-Array
     const deleteIndex = this.addressBook.findIndex((address: { id: number; }) => address.id === this.savedId);
     console.log(deleteIndex)
     this.addressBook.splice(deleteIndex, 1);
@@ -105,6 +117,7 @@ export class HomeComponent implements OnInit {
 
   copyAddress(address: Address) {
     console.log("Kopieren geklickt für ID:", address.id);
+    //geklickte Adresse finden und zum String umwandeln
     const copyItem = JSON.stringify(this.addressBook.find((address: { id: number; }) => address.id === address.id))
     console.log(copyItem)
 
@@ -142,13 +155,13 @@ export class HomeComponent implements OnInit {
 
     modal.style.display = "block";
 
-    // When the user clicks on <span> (x), close the modal
+    // Modal schließen, wenn X geklickt
     span.addEventListener('click', () => {
       modal.style.display = "none";
       console.log("Klickedin")
     })
 
-    // When the user clicks anywhere outside of the modal, close it
+    // Modal schließen, wenn außerhalb geklickt
     window.onclick = function (event) {
       if (event.target == modal) {
         modal.style.display = "none";
@@ -160,6 +173,7 @@ export class HomeComponent implements OnInit {
     var modal = document.getElementById("copy-modal")!;
 
     const newId = this.autoGenerateId()
+    //Adresse kopieren und mit neuer ID anlegen
     const newCopyAddress = new Address(
       newId,
       this.currentEditAddress!.name,
@@ -174,7 +188,6 @@ export class HomeComponent implements OnInit {
     modal.style.display = "none";
   }
 
-  currentEditAddress: Address | null = null
   editAddress(address: Address) {
     this.currentEditAddress = new Address(
       address.id,
@@ -191,13 +204,11 @@ export class HomeComponent implements OnInit {
 
     modal.style.display = "block";
 
-    // When the user clicks on <span> (x), close the modal
     span.addEventListener('click', () => {
       modal.style.display = "none";
       console.log("Klickedin")
     })
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function (event) {
       if (event.target == modal) {
         modal.style.display = "none";
@@ -207,7 +218,8 @@ export class HomeComponent implements OnInit {
 
   saveEditAddress() {
     var modal = document.getElementById("edit-modal")!;
-
+    // suche nach Element im Addressbook, das die gleiche ID hat wie die des Edit-modals
+    // setze Element auf Wert der aktuellen editierten Adresse
     this.addressBook.forEach((element, index) => {
       if (element.id == this.currentEditAddress!.id) {
         this.addressBook[index] = this.currentEditAddress!
@@ -228,7 +240,6 @@ export class HomeComponent implements OnInit {
       delmodal.style.display = "none";
     }
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function (event) {
       if (event.target == delmodal) {
         delmodal.style.display = "none";
@@ -242,13 +253,11 @@ export class HomeComponent implements OnInit {
     console.log("Add")
     addmodal.style.display = "block";
 
-    // When the user clicks on <span> (x), close the modal
     span.addEventListener('click', () => {
       addmodal.style.display = "none";
       console.log("Klicked")
     })
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function (event) {
       if (event.target == addmodal) {
         addmodal.style.display = "none";
@@ -294,7 +303,7 @@ class Address {
   id: number
   name: string
   street: string
-  plz: string //das führende 0 sonst nicht mitgelesen, als nicht signifikantes Zeichen interpretiert
+  plz: string //da führende 0 sonst nicht mitgelesen, als nicht signifikantes Zeichen interpretiert
   city: string
   country: string
 }

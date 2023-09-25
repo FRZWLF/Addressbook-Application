@@ -140,7 +140,7 @@ td {
     background-color: white;
     border: none;
     width: 25px;
-    margin-left: 1rem;
+    margin: 0 5%;
 }
 
 .table-btn i {
@@ -199,6 +199,7 @@ td {
     border: 1px solid #888;
     width: 40%;
     border-radius: 10px;
+    min-width: 440px;
 }
 
 /* The Close Button */
@@ -314,3 +315,19 @@ td {
     cursor: pointer;
     background-color: #999999;
 }
+
+/* this defines what will happen to the defined elements when the screen is <= 650px */
+@media (max-width: 650px){
+    /* changing flex direction of header elements so they show underneath */
+    header {
+      flex-direction: column;
+    }
+  
+    .search-container {
+      margin-top: 10px;
+    }
+
+    .modal-container {
+        min-width: 360px
+    }
+  }
